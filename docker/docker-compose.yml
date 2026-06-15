@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: wine_tasting_bot
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    volumes:
+      - ../storage:/app/storage
+      - ../logs:/app/logs

@@ -1,0 +1,13 @@
+.git/
+.gitignore
+.env
+docker/
+tests/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+logs/
+storage/
+.idea/
+.vscode/
