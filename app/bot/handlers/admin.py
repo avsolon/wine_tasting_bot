@@ -746,7 +746,42 @@ async def application_detail(callback: types.CallbackQuery) -> None:
         return
 
     text = format_application_card(application, tasting.title if tasting else "—")
-    await callback.message.edit_text(text, parse_mode="Markdown")
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Удалить заявку", callback_data=f"admin_app_delete:{app_id}")],
+        [InlineKeyboardButton(text="🔙 Назад", callback_data="admin_app_back")],
+    ])
+    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=keyboard)
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin_app_delete:"))
+async def delete_application(callback: types.CallbackQuery) -> None:
+    app_id = int(callback.data.split(":")[1])
+    async with async_session_factory() as session:
+        repo = ApplicationRepository(session)
+        app = await repo.get_by_id(app_id)
+        if app:
+            from app.repositories.tasting_repository import TastingRepository
+            tasting_repo = TastingRepository(session)
+            tasting = await tasting_repo.get_by_id(app.tasting_id)
+            if tasting:
+                tasting.available_seats += app.guests_count
+            await session.delete(app)
+            await session.commit()
+    await callback.message.edit_text("✅ Заявка удалена.")
+    await callback.message.answer("Админ-панель:", reply_markup=get_admin_menu())
+    await callback.answer()
+
+
+@router.callback_query(F.data == "admin_app_back")
+async def applications_back(callback: types.CallbackQuery) -> None:
+    async with async_session_factory() as session:
+        repo = ApplicationRepository(session)
+        applications = await repo.get_all()
+    await callback.message.edit_text(
+        "Список заявок:",
+        reply_markup=get_application_list_keyboard(applications),
+    )
     await callback.answer()
 
 

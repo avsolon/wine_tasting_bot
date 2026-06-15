@@ -14,16 +14,22 @@ class Bitrix24LeadService:
         comment: str | None = None,
         event_name: str | None = None,
         telegram_id: int | None = None,
+        price: float | None = None,
+        guests_count: int = 1,
     ) -> str | None:
         if not self.webhook_url:
             logger.warning("Bitrix24 webhook URL not configured, skipping lead creation")
             return None
 
+        total = price * guests_count if price else 0
+
         fields = {
-            "TITLE": "Запись на дегустацию",
+            "TITLE": f"Запись на дегустацию: {event_name or ''}",
             "NAME": name,
             "PHONE": [{"VALUE": phone, "VALUE_TYPE": "WORK"}],
             "COMMENTS": comment or "",
+            "OPPORTUNITY": total,
+            "CURRENCY_ID": "RUB",
         }
         if event_name:
             fields["UF_EVENT_NAME"] = event_name

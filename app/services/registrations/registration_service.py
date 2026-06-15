@@ -67,6 +67,8 @@ class RegistrationService:
             comment=f"{guests_count} гостя. {comment or ''}".strip(),
             event_name=tasting.title,
             telegram_id=telegram_id,
+            price=tasting.price,
+            guests_count=guests_count,
         )
         if crm_lead_id:
             await self.application_repo.update_crm_lead(application.id, crm_lead_id)
